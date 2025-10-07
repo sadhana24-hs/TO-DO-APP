@@ -19,6 +19,7 @@ const Index = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const stored = localStorage.getItem("todos");
@@ -30,6 +31,13 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const addTodo = () => {
     if (inputValue.trim()) {
@@ -71,6 +79,13 @@ const Index = () => {
             My Tasks
           </h1>
           <p className="text-muted-foreground">Stay organized, get things done</p>
+          <div className="mt-4 text-2xl font-semibold text-foreground/80">
+            {currentTime.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit' 
+            })}
+          </div>
         </div>
 
         {/* Add Todo Card */}
