@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
-import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
+
+type ViewType = "day" | "week" | "month";
 
 interface TimeBlock {
   id: string;
@@ -23,9 +25,20 @@ const Calendar = () => {
   const [newTask, setNewTask] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [viewType, setViewType] = useState<ViewType>("week");
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  const getDaysToDisplay = () => {
+    if (viewType === "day") return [selectedDate];
+    if (viewType === "week") return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    return monthDays;
+  };
+  
+  const daysToDisplay = getDaysToDisplay();
   const timeSlots = Array.from({ length: 24 }, (_, i) => 
     `${i.toString().padStart(2, '0')}:00`
   );
@@ -70,8 +83,22 @@ const Calendar = () => {
     return timeBlocks.filter(block => isSameDay(new Date(block.date), day));
   };
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    setSelectedDate(addDays(selectedDate, direction === 'next' ? 7 : -7));
+  const navigate = (direction: 'prev' | 'next') => {
+    if (viewType === "day") {
+      setSelectedDate(addDays(selectedDate, direction === 'next' ? 1 : -1));
+    } else if (viewType === "week") {
+      setSelectedDate(addDays(selectedDate, direction === 'next' ? 7 : -7));
+    } else {
+      const newDate = new Date(selectedDate);
+      newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+      setSelectedDate(newDate);
+    }
+  };
+
+  const getHeaderText = () => {
+    if (viewType === "day") return format(selectedDate, 'MMMM d, yyyy');
+    if (viewType === "week") return `${format(weekStart, 'MMMM d')} - ${format(addDays(weekStart, 6), 'MMMM d, yyyy')}`;
+    return format(selectedDate, 'MMMM yyyy');
   };
 
   return (
@@ -86,17 +113,46 @@ const Calendar = () => {
               Calendar
             </h1>
             <p className="text-muted-foreground mt-1">
-              {format(weekStart, 'MMMM d')} - {format(addDays(weekStart, 6), 'MMMM d, yyyy')}
+              {getHeaderText()}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => navigateWeek('prev')} variant="outline" size="icon">
+            <Button onClick={() => navigate('prev')} variant="outline" size="icon">
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button onClick={() => setSelectedDate(new Date())} variant="outline">
-              Today
-            </Button>
-            <Button onClick={() => navigateWeek('next')} variant="outline" size="icon">
+            <div className="flex gap-1 border rounded-md p-1 bg-background/50">
+              <Button
+                onClick={() => setViewType("day")}
+                variant={viewType === "day" ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  viewType === "day" && "bg-gradient-to-r from-primary to-accent"
+                )}
+              >
+                Day
+              </Button>
+              <Button
+                onClick={() => setViewType("week")}
+                variant={viewType === "week" ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  viewType === "week" && "bg-gradient-to-r from-primary to-accent"
+                )}
+              >
+                Week
+              </Button>
+              <Button
+                onClick={() => setViewType("month")}
+                variant={viewType === "month" ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  viewType === "month" && "bg-gradient-to-r from-primary to-accent"
+                )}
+              >
+                Month
+              </Button>
+            </div>
+            <Button onClick={() => navigate('next')} variant="outline" size="icon">
               <ChevronRight className="w-4 h-4" />
             </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -158,13 +214,16 @@ const Calendar = () => {
         </div>
 
         {/* Calendar Grid */}
-        <Card className="p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-hidden">
-          <div className="grid grid-cols-8 gap-2">
+        <Card className="p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-auto max-h-[calc(100vh-300px)]">
+          <div className={cn(
+            "grid gap-2",
+            viewType === "day" ? "grid-cols-2" : viewType === "week" ? "grid-cols-8" : "grid-cols-8"
+          )}>
             {/* Time Column Header */}
             <div className="text-sm font-medium text-muted-foreground p-2">Time</div>
             
             {/* Day Headers */}
-            {weekDays.map((day) => (
+            {daysToDisplay.map((day) => (
               <div
                 key={day.toString()}
                 className={cn(
@@ -190,7 +249,7 @@ const Calendar = () => {
                 <div key={time} className="text-xs text-muted-foreground p-2 border-t border-border/50">
                   {time}
                 </div>
-                {weekDays.map((day) => {
+                {daysToDisplay.map((day) => {
                   const dayBlocks = getBlocksForDay(day);
                   const blockInSlot = dayBlocks.find(
                     block => block.startTime.startsWith(time.split(':')[0])
