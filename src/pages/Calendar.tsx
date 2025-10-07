@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { format, addDays, startOfWeek, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,8 @@ const Calendar = () => {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
   const [viewType, setViewType] = useState<ViewType>("week");
+  const [selectedDayForPanel, setSelectedDayForPanel] = useState<Date | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const monthStart = startOfMonth(selectedDate);
@@ -101,13 +104,18 @@ const Calendar = () => {
     return format(selectedDate, 'MMMM yyyy');
   };
 
+  const handleDayClick = (day: Date) => {
+    setSelectedDayForPanel(day);
+    setIsPanelOpen(true);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex flex-col">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="flex-1 flex flex-col p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Calendar
@@ -214,20 +222,21 @@ const Calendar = () => {
         </div>
 
         {/* Calendar Grid */}
-        <Card className="p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-auto max-h-[calc(100vh-300px)]">
+        <Card className="flex-1 p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-auto">
           <div className={cn(
-            "grid gap-2",
+            "grid gap-2 h-full",
             viewType === "day" ? "grid-cols-2" : viewType === "week" ? "grid-cols-8" : "grid-cols-8"
           )}>
             {/* Time Column Header */}
-            <div className="text-sm font-medium text-muted-foreground p-2">Time</div>
+            <div className="text-sm font-medium text-muted-foreground p-2 sticky top-0 bg-card z-10">Time</div>
             
             {/* Day Headers */}
             {daysToDisplay.map((day) => (
               <div
                 key={day.toString()}
+                onClick={() => handleDayClick(day)}
                 className={cn(
-                  "text-center p-2 rounded-lg",
+                  "text-center p-2 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 bg-card z-10",
                   isSameDay(day, new Date()) && "bg-primary/10"
                 )}
               >
@@ -258,7 +267,8 @@ const Calendar = () => {
                   return (
                     <div
                       key={`${day}-${time}`}
-                      className="min-h-[60px] border-t border-border/50 p-1"
+                      onClick={() => handleDayClick(day)}
+                      className="min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors"
                     >
                       {blockInSlot && (
                         <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
@@ -289,6 +299,66 @@ const Calendar = () => {
             ))}
           </div>
         </Card>
+
+        {/* Day Detail Side Panel */}
+        <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {selectedDayForPanel && format(selectedDayForPanel, 'EEEE, MMMM d, yyyy')}
+              </SheetTitle>
+            </SheetHeader>
+            
+            <div className="mt-6 space-y-4">
+              {selectedDayForPanel && getBlocksForDay(selectedDayForPanel).length === 0 ? (
+                <Card className="p-6 text-center border-0 bg-card/60 backdrop-blur-sm">
+                  <p className="text-muted-foreground">No time blocks for this day</p>
+                </Card>
+              ) : (
+                selectedDayForPanel && getBlocksForDay(selectedDayForPanel)
+                  .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                  .map((block) => (
+                    <Card
+                      key={block.id}
+                      className="p-4 border-0 bg-gradient-to-br from-primary/10 to-accent/10 shadow-md animate-in fade-in slide-in-from-right-5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-2">{block.task}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>{block.startTime} - {block.endTime}</span>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => deleteTimeBlock(block.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))
+              )}
+              
+              <Button
+                onClick={() => {
+                  if (selectedDayForPanel) {
+                    setSelectedDate(selectedDayForPanel);
+                    setIsPanelOpen(false);
+                    setIsDialogOpen(true);
+                  }
+                }}
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Time Block for This Day
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
