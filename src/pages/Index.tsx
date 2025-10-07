@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Trash2, Plus, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Navbar } from "@/components/Navbar";
 
 interface Todo {
   id: string;
@@ -71,8 +72,9 @@ const Index = () => {
   const activeCount = todos.filter((t) => !t.completed).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
+      <Navbar />
+      <div className="max-w-2xl mx-auto py-12 px-4">
         {/* Header */}
         <div className="text-center mb-8 space-y-2">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
