@@ -109,6 +109,16 @@ const Calendar = () => {
     setIsPanelOpen(true);
   };
 
+  const handleTimeSlotClick = (day: Date, time: string) => {
+    setSelectedDate(day);
+    setStartTime(time);
+    // Set end time to one hour after start time
+    const [hour] = time.split(':');
+    const nextHour = (parseInt(hour) + 1).toString().padStart(2, '0');
+    setEndTime(`${nextHour}:00`);
+    setIsDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex flex-col">
       <Navbar />
@@ -261,7 +271,7 @@ const Calendar = () => {
                   return (
                     <div
                       key={`${day}-${time}`}
-                      onClick={() => handleDayClick(day)}
+                      onClick={() => blockInSlot ? handleDayClick(day) : handleTimeSlotClick(day, time)}
                       className={cn(
                         "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative"
                       )}
@@ -283,7 +293,10 @@ const Calendar = () => {
                               </div>
                             </div>
                             <Button
-                              onClick={() => deleteTimeBlock(blockInSlot.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteTimeBlock(blockInSlot.id);
+                              }}
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
