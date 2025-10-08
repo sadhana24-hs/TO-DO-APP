@@ -237,7 +237,7 @@ const Calendar = () => {
                 onClick={() => handleDayClick(day)}
                 className={cn(
                   "text-center p-2 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 bg-card z-10",
-                  isSameDay(day, new Date()) && "bg-primary/10"
+                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/20 border-2 border-primary/50"
                 )}
               >
                 <div className="text-xs font-medium text-muted-foreground">
@@ -245,7 +245,7 @@ const Calendar = () => {
                 </div>
                 <div className={cn(
                   "text-lg font-semibold mt-1",
-                  isSameDay(day, new Date()) && "text-primary"
+                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "text-primary"
                 )}>
                   {format(day, 'd')}
                 </div>
@@ -268,7 +268,10 @@ const Calendar = () => {
                     <div
                       key={`${day}-${time}`}
                       onClick={() => handleDayClick(day)}
-                      className="min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors"
+                      className={cn(
+                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors",
+                        selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/10"
+                      )}
                     >
                       {blockInSlot && (
                         <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
