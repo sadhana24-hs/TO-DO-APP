@@ -86,6 +86,14 @@ const Calendar = () => {
     return timeBlocks.filter(block => isSameDay(new Date(block.date), day));
   };
 
+  const isTimeInBlock = (time: string, block: TimeBlock) => {
+    const timeHour = parseInt(time.split(':')[0]);
+    const startHour = parseInt(block.startTime.split(':')[0]);
+    const endHour = parseInt(block.endTime.split(':')[0]);
+    
+    return timeHour >= startHour && timeHour < endHour;
+  };
+
   const navigate = (direction: 'prev' | 'next') => {
     if (viewType === "day") {
       setSelectedDate(addDays(selectedDate, direction === 'next' ? 1 : -1));
@@ -265,8 +273,9 @@ const Calendar = () => {
                 {daysToDisplay.map((day) => {
                   const dayBlocks = getBlocksForDay(day);
                   const blockInSlot = dayBlocks.find(
-                    block => block.startTime.startsWith(time.split(':')[0])
+                    block => isTimeInBlock(time, block)
                   );
+                  const isFirstSlot = blockInSlot && blockInSlot.startTime.startsWith(time.split(':')[0]);
                   
                   return (
                     <div
@@ -283,27 +292,33 @@ const Calendar = () => {
                       )}
                       {blockInSlot && (
                         <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
-                          <div className="flex items-start justify-between gap-1">
-                            <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium truncate">
-                                {blockInSlot.task}
+                          {isFirstSlot ? (
+                            <div className="flex items-start justify-between gap-1">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium truncate">
+                                  {blockInSlot.task}
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {blockInSlot.startTime} - {blockInSlot.endTime}
+                                </div>
                               </div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {blockInSlot.startTime} - {blockInSlot.endTime}
-                              </div>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteTimeBlock(blockInSlot.id);
+                                }}
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
                             </div>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteTimeBlock(blockInSlot.id);
-                              }}
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
+                          ) : (
+                            <div className="h-full flex items-center justify-center text-xs text-muted-foreground/50">
+                              ↑
+                            </div>
+                          )}
                         </Card>
                       )}
                     </div>
