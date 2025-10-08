@@ -225,14 +225,8 @@ const Calendar = () => {
         <Card className="flex-1 p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-auto">
           <div className={cn(
             "grid gap-2 h-full",
-            viewType === "day" ? "grid-cols-2" : viewType === "week" ? "grid-cols-8" : "grid-cols-8"
+            viewType === "day" ? "grid-cols-1" : viewType === "week" ? "grid-cols-7" : "grid-cols-7"
           )}>
-            {/* Time Column Header */}
-            <div className={cn(
-              "text-sm font-medium text-muted-foreground p-2 sticky top-0 z-10",
-              selectedDayForPanel ? "bg-primary/20" : "bg-card"
-            )}>Time</div>
-            
             {/* Day Headers */}
             {daysToDisplay.map((day) => (
               <div
@@ -258,12 +252,6 @@ const Calendar = () => {
             {/* Time Slots */}
             {timeSlots.map((time) => (
               <>
-                <div key={time} className={cn(
-                  "text-xs text-muted-foreground p-2 border-t border-border/50",
-                  selectedDayForPanel && "bg-primary/20"
-                )}>
-                  {time}
-                </div>
                 {daysToDisplay.map((day) => {
                   const dayBlocks = getBlocksForDay(day);
                   const blockInSlot = dayBlocks.find(
@@ -275,10 +263,15 @@ const Calendar = () => {
                       key={`${day}-${time}`}
                       onClick={() => handleDayClick(day)}
                       className={cn(
-                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors",
+                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative",
                         selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/10"
                       )}
                     >
+                      {!blockInSlot && (
+                        <div className="absolute top-1 left-1 text-[10px] text-muted-foreground/50">
+                          {time}
+                        </div>
+                      )}
                       {blockInSlot && (
                         <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
                           <div className="flex items-start justify-between gap-1">
