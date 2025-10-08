@@ -236,8 +236,8 @@ const Calendar = () => {
                 key={day.toString()}
                 onClick={() => handleDayClick(day)}
                 className={cn(
-                  "text-center p-2 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 bg-card z-10",
-                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/20 border-2 border-primary/50"
+                  "text-center p-2 cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 z-10",
+                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) ? "bg-primary/20" : "bg-card"
                 )}
               >
                 <div className="text-xs font-medium text-muted-foreground">
