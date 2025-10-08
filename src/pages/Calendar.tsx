@@ -263,8 +263,7 @@ const Calendar = () => {
                       key={`${day}-${time}`}
                       onClick={() => handleDayClick(day)}
                       className={cn(
-                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative",
-                        selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/10"
+                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative"
                       )}
                     >
                       {!blockInSlot && (
