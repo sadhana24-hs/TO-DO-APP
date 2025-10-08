@@ -228,7 +228,10 @@ const Calendar = () => {
             viewType === "day" ? "grid-cols-2" : viewType === "week" ? "grid-cols-8" : "grid-cols-8"
           )}>
             {/* Time Column Header */}
-            <div className="text-sm font-medium text-muted-foreground p-2 sticky top-0 bg-card z-10">Time</div>
+            <div className={cn(
+              "text-sm font-medium text-muted-foreground p-2 sticky top-0 z-10",
+              selectedDayForPanel ? "bg-primary/20" : "bg-card"
+            )}>Time</div>
             
             {/* Day Headers */}
             {daysToDisplay.map((day) => (
@@ -255,7 +258,10 @@ const Calendar = () => {
             {/* Time Slots */}
             {timeSlots.map((time) => (
               <>
-                <div key={time} className="text-xs text-muted-foreground p-2 border-t border-border/50">
+                <div key={time} className={cn(
+                  "text-xs text-muted-foreground p-2 border-t border-border/50",
+                  selectedDayForPanel && "bg-primary/20"
+                )}>
                   {time}
                 </div>
                 {daysToDisplay.map((day) => {
