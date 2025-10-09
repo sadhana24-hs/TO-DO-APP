@@ -113,8 +113,13 @@ const Calendar = () => {
   };
 
   const handleDayClick = (day: Date) => {
-    setSelectedDayForPanel(day);
-    setIsPanelOpen(true);
+    if (viewType === "month") {
+      setSelectedDate(day);
+      setViewType("day");
+    } else {
+      setSelectedDayForPanel(day);
+      setIsPanelOpen(true);
+    }
   };
 
   const handleTimeSlotClick = (day: Date, time: string) => {
