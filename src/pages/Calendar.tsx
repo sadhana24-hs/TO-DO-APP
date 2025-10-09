@@ -113,7 +113,7 @@ const Calendar = () => {
   };
 
   const handleDayClick = (day: Date) => {
-    if (viewType === "month") {
+    if (viewType === "month" || viewType === "week") {
       setSelectedDate(day);
       setViewType("day");
     } else {
