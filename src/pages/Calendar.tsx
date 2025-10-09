@@ -34,6 +34,8 @@ const Calendar = () => {
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const monthStartWeekday = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const paddingDays = eachDayOfInterval({ start: monthStartWeekday, end: addDays(monthStart, -1) });
   
   const getDaysToDisplay = () => {
     if (viewType === "day") return [selectedDate];
@@ -253,6 +255,15 @@ const Calendar = () => {
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                 <div key={day} className="text-center p-2 text-xs font-medium text-muted-foreground bg-card">
                   {day}
+                </div>
+              ))}
+              
+              {/* Padding days (empty cells before month starts) */}
+              {paddingDays.map((day) => (
+                <div key={day.toString()} className="border border-transparent rounded-md p-2 min-h-[100px]">
+                  <div className="text-sm font-semibold mb-2 text-muted-foreground/30">
+                    {format(day, 'd')}
+                  </div>
                 </div>
               ))}
               
