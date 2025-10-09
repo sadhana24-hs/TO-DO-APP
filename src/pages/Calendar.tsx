@@ -260,11 +260,7 @@ const Calendar = () => {
               
               {/* Padding days (empty cells before month starts) */}
               {paddingDays.map((day) => (
-                <div key={day.toString()} className="border border-transparent rounded-md p-2 min-h-[100px]">
-                  <div className="text-sm font-semibold mb-2 text-muted-foreground/30">
-                    {format(day, 'd')}
-                  </div>
-                </div>
+                <div key={day.toString()} className="border border-transparent rounded-md p-2 min-h-[100px]" />
               ))}
               
               {/* Days with tasks */}
