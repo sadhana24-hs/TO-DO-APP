@@ -241,92 +241,140 @@ const Calendar = () => {
 
         {/* Calendar Grid */}
         <Card className="flex-1 p-4 border-0 bg-card/80 backdrop-blur-sm shadow-lg overflow-auto">
-          <div className={cn(
-            "grid gap-2 h-full",
-            viewType === "day" ? "grid-cols-1" : viewType === "week" ? "grid-cols-7" : "grid-cols-7"
-          )}>
-            {/* Day Headers */}
-            {daysToDisplay.map((day) => (
-              <div
-                key={day.toString()}
-                onClick={() => handleDayClick(day)}
-                className={cn(
-                  "text-center p-2 cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 z-10",
-                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) ? "bg-primary/20" : "bg-card"
-                )}
-              >
-                <div className="text-xs font-medium text-muted-foreground">
-                  {format(day, 'EEE')}
+          {viewType === "month" ? (
+            /* Month View - Compact without time slots */
+            <div className="grid grid-cols-7 gap-2 h-full">
+              {/* Day Headers */}
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <div key={day} className="text-center p-2 text-xs font-medium text-muted-foreground bg-card">
+                  {day}
                 </div>
-                <div className={cn(
-                  "text-lg font-semibold mt-1",
-                  selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "text-primary"
-                )}>
-                  {format(day, 'd')}
-                </div>
-              </div>
-            ))}
-
-            {/* Time Slots */}
-            {timeSlots.map((time) => (
-              <>
-                {daysToDisplay.map((day) => {
-                  const dayBlocks = getBlocksForDay(day);
-                  const blockInSlot = dayBlocks.find(
-                    block => isTimeInBlock(time, block)
-                  );
-                  const isFirstSlot = blockInSlot && blockInSlot.startTime.startsWith(time.split(':')[0]);
-                  
-                  return (
-                    <div
-                      key={`${day}-${time}`}
-                      onClick={() => blockInSlot ? handleDayClick(day) : handleTimeSlotClick(day, time)}
-                      className={cn(
-                        "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative"
-                      )}
-                    >
-                      {!blockInSlot && (
-                        <div className="absolute top-1 left-1 text-[10px] text-muted-foreground/50">
-                          {time}
-                        </div>
-                      )}
-                      {blockInSlot && (
-                        <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
-                          {isFirstSlot ? (
-                            <div className="flex items-start justify-between gap-1">
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium truncate">
-                                  {blockInSlot.task}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {blockInSlot.startTime} - {blockInSlot.endTime}
-                                </div>
-                              </div>
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteTimeBlock(blockInSlot.id);
-                                }}
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="h-full flex items-center justify-center text-xs text-muted-foreground/50">
-                              ↑
-                            </div>
-                          )}
+              ))}
+              
+              {/* Days with tasks */}
+              {daysToDisplay.map((day) => {
+                const dayBlocks = getBlocksForDay(day);
+                return (
+                  <div
+                    key={day.toString()}
+                    onClick={() => handleDayClick(day)}
+                    className={cn(
+                      "border border-border/50 rounded-md p-2 cursor-pointer hover:bg-muted/50 transition-colors min-h-[100px]",
+                      selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "bg-primary/10"
+                    )}
+                  >
+                    <div className={cn(
+                      "text-sm font-semibold mb-2",
+                      isSameDay(day, new Date()) && "text-primary"
+                    )}>
+                      {format(day, 'd')}
+                    </div>
+                    <div className="space-y-1">
+                      {dayBlocks.slice(0, 3).map((block) => (
+                        <Card
+                          key={block.id}
+                          className="p-1 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30"
+                        >
+                          <div className="text-xs font-medium truncate">{block.task}</div>
                         </Card>
+                      ))}
+                      {dayBlocks.length > 3 && (
+                        <div className="text-xs text-muted-foreground">+{dayBlocks.length - 3} more</div>
                       )}
                     </div>
-                  );
-                })}
-              </>
-            ))}
-          </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* Day/Week View - With time slots */
+            <div className={cn(
+              "grid gap-2 h-full",
+              viewType === "day" ? "grid-cols-1" : "grid-cols-7"
+            )}>
+              {/* Day Headers */}
+              {daysToDisplay.map((day) => (
+                <div
+                  key={day.toString()}
+                  onClick={() => handleDayClick(day)}
+                  className={cn(
+                    "text-center p-2 cursor-pointer hover:bg-muted/50 transition-colors sticky top-0 z-10",
+                    selectedDayForPanel && isSameDay(day, selectedDayForPanel) ? "bg-primary/20" : "bg-card"
+                  )}
+                >
+                  <div className="text-xs font-medium text-muted-foreground">
+                    {format(day, 'EEE')}
+                  </div>
+                  <div className={cn(
+                    "text-lg font-semibold mt-1",
+                    selectedDayForPanel && isSameDay(day, selectedDayForPanel) && "text-primary"
+                  )}>
+                    {format(day, 'd')}
+                  </div>
+                </div>
+              ))}
+
+              {/* Time Slots */}
+              {timeSlots.map((time) => (
+                <>
+                  {daysToDisplay.map((day) => {
+                    const dayBlocks = getBlocksForDay(day);
+                    const blockInSlot = dayBlocks.find(
+                      block => isTimeInBlock(time, block)
+                    );
+                    const isFirstSlot = blockInSlot && blockInSlot.startTime.startsWith(time.split(':')[0]);
+                    
+                    return (
+                      <div
+                        key={`${day}-${time}`}
+                        onClick={() => blockInSlot ? handleDayClick(day) : handleTimeSlotClick(day, time)}
+                        className={cn(
+                          "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative"
+                        )}
+                      >
+                        {!blockInSlot && (
+                          <div className="absolute top-1 left-1 text-[10px] text-muted-foreground/50">
+                            {time}
+                          </div>
+                        )}
+                        {blockInSlot && (
+                          <Card className="p-2 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30 h-full animate-in fade-in slide-in-from-top-2">
+                            {isFirstSlot ? (
+                              <div className="flex items-start justify-between gap-1">
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium truncate">
+                                    {blockInSlot.task}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {blockInSlot.startTime} - {blockInSlot.endTime}
+                                  </div>
+                                </div>
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteTimeBlock(blockInSlot.id);
+                                  }}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="h-full flex items-center justify-center text-xs text-muted-foreground/50">
+                                ↑
+                              </div>
+                            )}
+                          </Card>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              ))}
+            </div>
+          )}
         </Card>
 
         {/* Day Detail Side Panel */}
