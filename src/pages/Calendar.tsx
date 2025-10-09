@@ -334,7 +334,8 @@ const Calendar = () => {
                         key={`${day}-${time}`}
                         onClick={() => blockInSlot ? handleDayClick(day) : handleTimeSlotClick(day, time)}
                         className={cn(
-                          "min-h-[60px] border-t border-border/50 p-1 cursor-pointer hover:bg-muted/20 transition-colors relative"
+                          "min-h-[60px] p-1 cursor-pointer hover:bg-muted/20 transition-colors relative",
+                          isFirstSlot ? "border-t border-border/50" : !blockInSlot && "border-t border-border/50"
                         )}
                       >
                         {!blockInSlot && (
